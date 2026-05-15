@@ -1,1 +1,22 @@
-# SOLVED: api + db for running tests in CI
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: noderegistry
+      POSTGRES_PASSWORD: noderegistry
+      POSTGRES_DB: noderegistry
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U noderegistry"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build: .
+    environment:
+      DATABASE_URL: postgresql://noderegistry:noderegistry@db:5432/noderegistry
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
